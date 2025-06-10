@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stockholm Båt24</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-blue: #1e40af;
+      --secondary-blue: #3b82f6;
+      --accent-orange: #f97316;
+      --water-blue: #0ea5e9;
+      --summer-yellow: #fbbf24;
+      --white: #ffffff;
+      --light-gray: #f8fafc;
+      --border-gray: #e2e8f0;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --gradient-bg: linear-gradient(135deg, #0ea5e9 0%, #1e40af 100%);
+      --shadow: 0 4px 20px rgba(30, 64, 175, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--light-gray);
+      color: var(--text-dark);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      max-width: 414px;
+      margin: 0 auto;
+      background: var(--white);
+      min-height: 100vh;
+      box-shadow: 0 0 40px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    /* Header */
+    .app-header {
+      background: var(--gradient-bg);
+      padding: 60px 20px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .app-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><pattern id="waves" x="0" y="0" width="100" height="20" patternUnits="userSpaceOnUse"><path d="M0 10 Q25 0 50 10 T100 10 V20 H0 Z" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="20" fill="url(%23waves)"/></svg>') repeat;
+      animation: wave 20s linear infinite;
+      opacity: 0.3;
+    }
+
+    @keyframes wave {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100px); }
+    }
+
+    .app-title {
+      color: var(--white);
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .app-subtitle {
+      color: rgba(255,255,255,0.9);
+      font-size: 1rem;
+      font-weight: 400;
+      position: relative;
+      z-index: 1;
+    }
+
+    .location-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      color: var(--white);
+      font-size: 0.9rem;
+      margin-top: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Voice Agent */
+    .voice-agent {
+      background: var(--white);
+      margin: -20px 20px 20px;
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .agent-avatar {
+      width: 60px;
+      height: 60px;
+      background: var(--gradient-bg);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 1.5rem;
+      color: var(--white);
+    }
+
+    .agent-greeting {
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+
+    /* Boat Gallery Section */
+    .content-section {
+      padding: 0 20px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--gradient-bg);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 1.2rem;
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .category-selector {
+      background: var(--white);
+      border: 2px solid var(--border-gray);
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 1rem;
+      width: 100%;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 16px center;
+      background-repeat: no-repeat;
+      background-size: 16px;
+      padding-right: 48px;
+    }
+
+    .category-selector:focus {
+      outline: none;
+      border-color: var(--secondary-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Carousel */
+    .boat-carousel {
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 30px;
+    }
+
+    .carousel-item {
+      height: 280px;
+      position: relative;
+    }
+
+    .carousel-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .carousel-item:hover img {
+      transform: scale(1.05);
+    }
+
+    .boat-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      color: var(--white);
+      padding: 40px 20px 20px;
+    }
+
+    .boat-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .boat-features {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+      width: 50px;
+      height: 50px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.9);
+      border-radius: 50%;
+      border: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .carousel-control-prev {
+      left: 15px;
+    }
+
+    .carousel-control-next {
+      right: 15px;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+      background-size: 20px;
+      width: 20px;
+      height: 20px;
+      filter: invert(1);
+    }
+
+    .carousel-indicators {
+      bottom: 15px;
+    }
+
+    .carousel-indicators button {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: none;
+      margin: 0 4px;
+    }
+
+    /* Chat Section */
+    .chat-section {
+      background: var(--white);
+      margin: 0 20px 30px;
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: var(--gradient-bg);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .chat-title {
+      color: var(--white);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .chat-subtitle {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+    }
+
+    .chat-content {
+      padding: 20px;
+    }
+
+    .agent-response {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      min-height: 60px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      border-left: 4px solid var(--secondary-blue);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .agent-response.loading {
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .input-group {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--light-gray);
+      border: 2px solid var(--border-gray);
+      border-radius: 24px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      resize: none;
+      max-height: 120px;
+      transition: all 0.3s ease;
+    }
+
+    .chat-input:focus {
+      outline: none;
+      border-color: var(--secondary-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .send-button {
+      width: 48px;
+      height: 48px;
+      background: var(--gradient-bg);
+      border: none;
+      border-radius: 50%;
+      color: var(--white);
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .send-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .send-button:active {
+      transform: translateY(0);
+    }
+
+    /* Footer */
+    .app-footer {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    .footer-links a {
+      color: var(--secondary-blue);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary-blue);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      .app-container {
+        max-width: 100%;
+      }
+      
+      .app-header {
+        padding: 50px 16px 30px;
+      }
+      
+      .content-section {
+        padding: 0 16px;
+      }
+      
+      .voice-agent,
+      .chat-section {
+        margin-left: 16px;
+        margin-right: 16px;
+      }
+    }
+
+    /* Floating elements animation */
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Success states */
+    .success-feedback {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+    
+    <!-- Header -->
+    <header class="app-header">
+      <h1 class="app-title">
+        <i class="fas fa-anchor"></i>
+        Stockholm Båt24
+      </h1>
+      <p class="app-subtitle">Upptäck Stockholms skärgård</p>     
+        
+    </header>
+
+    <!-- Voice Agent Card -->
+    <div class="voice-agent floating">
+      <div class="agent-avatar">
+        <i class="fas fa-headset"></i>
+      </div>
+      <h3 class="agent-greeting">Hej, mitt namn är Malin!</h3>
+      <p style="color: var(--text-light); margin-bottom: 20px;">Frågor? Prata med med mig</p>
+      <elevenlabs-convai agent-id="agent_01jwb4mk7zf6mr9g4ch5aj3tga"></elevenlabs-convai>
+    </div>
+
+    <!-- Boat Gallery Section -->
+    <section class="content-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <i class="fas fa-ship"></i>
+        </div>
+        <h2 class="section-title">Våra Båtar</h2>
+      </div>
+      
+      <select id="productSelector" class="category-selector">
+        <option selected disabled>Välj båtkategori för att börja</option>
+        <option value="boats">🛥️ Visa alla båtar</option>
+      </select>
+      
+      <div id="carouselWrapper"></div>
+    </section>
+
+    <!-- Chat Section -->
+    <section class="chat-section">
+      <div class="chat-header">
+        <h3 class="chat-title">
+          <i class="fas fa-comments"></i>
+          Kontakta Malin
+        </h3>
+        <p class="chat-subtitle">Skicka ett meddelande</p>
+      </div>
+      
+      <div class="chat-content">
+        <div id="agentResponse" class="agent-response">
+          <i class="fas fa-robot"></i>
+          Malin svarar ...
+        </div>
+        
+        <div class="input-group">
+          <textarea 
+            id="chatInput" 
+            class="chat-input" 
+            placeholder="Skriv ditt meddelande här..." 
+            rows="1"
+          ></textarea>
+          <button id="sendBtn" class="send-button">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-links">
+        <a href="#"><i class="fas fa-info-circle"></i> Om oss</a>
+        <a href="#"><i class="fas fa-phone"></i> Kontakt</a>
+        <a href="#"><i class="fas fa-star"></i> Recensioner</a>
+      </div>
+      <p>&copy; 2025 Stockholm Båt24. Upplev skärgården på ditt sätt.</p>
+    </footer>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+  
+  <script>
+    const AGENT_URL = "https://claure.app.n8n.cloud/webhook/webhook-text";
+
+    // Auto-resize textarea
+    const chatInput = document.getElementById("chatInput");
+    chatInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // UI Karusell  
+
+    document.getElementById("productSelector").addEventListener("change", async function () {
+      const category = this.value;
+      if (category === "boats") {
+        // Show loading state
+        document.getElementById("carouselWrapper").innerHTML = `
+          <div style="text-align: center; padding: 40px; color: var(--text-light);">
+            <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--secondary-blue);"></i>
+            <p style="margin-top: 16px;">Laddar båtar...</p>
+          </div>
+        `;
+
+        try {
+          const res = await fetch(AGENT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+          });
+
+          const data = await res.json();
+          const images = Array.isArray(data) ? data : [];
+
+          const validImages = images.filter(img => img.image && img.name);
+          if (!validImages.length) {
+            document.getElementById("carouselWrapper").innerHTML = `
+              <div style="text-align: center; padding: 40px; color: var(--text-light);">
+                <i class="fas fa-exclamation-triangle fa-2x" style="color: var(--accent-orange);"></i>
+                <p style="margin-top: 16px;">Inga båtar hittades just nu</p>
+              </div>
+            `;
+            return;
+          }
+
+          const carouselId = "boatCarousel";
+
+          const indicators = validImages.map((_, i) =>
+            `<button type="button" data-bs-target="#${carouselId}" data-bs-slide-to="${i}" ${i === 0 ? 'class="active"' : ''} aria-label="Slide ${i + 1}"></button>`
+          ).join("");
+
+          const slides = validImages.map((img, i) =>
+            `<div class="carousel-item ${i === 0 ? 'active' : ''}">
+              <img src="${img.image}" class="d-block w-100" alt="${img.name}" style="cursor: pointer;">
+              <div class="boat-info">
+                <div class="boat-name">${img.name}</div>
+                <div class="boat-features">
+                  <i class="fas fa-users"></i> Perfekt för familjer
+                  <span style="margin: 0 8px;">•</span>
+                  <i class="fas fa-anchor"></i> Klicka för mer info
+                </div>
+              </div>
+            </div>`
+          ).join("");
+
+          document.getElementById("carouselWrapper").innerHTML = `
+            <div id="${carouselId}" class="carousel slide boat-carousel" data-bs-touch="true" data-bs-ride="carousel">
+              <div class="carousel-indicators">${indicators}</div>
+              <div class="carousel-inner">${slides}</div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Föregående</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Nästa</span>
+              </button>
+            </div>
+          `;
+
+          // Success feedback
+          const successMsg = document.createElement('div');
+          successMsg.className = 'success-feedback';
+          successMsg.innerHTML = '<i class="fas fa-check"></i> Båtar laddade! Klicka på en båt för mer information.';
+          document.getElementById("carouselWrapper").insertBefore(successMsg, document.getElementById(carouselId));
+          
+          setTimeout(() => successMsg.remove(), 3000);
+
+          // Boat click handlers
+          document.querySelectorAll('.carousel-item img').forEach(img => {
+            img.addEventListener('click', () => {
+              const boatName = img.alt;
+              sendToAgent(`Berätta mer om båten ${boatName}. Vad kostar det att hyra den?`);
+              
+              // Scroll to chat
+              document.querySelector('.chat-section').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+              });
+            });
+          });
+
+        } catch (err) {
+          console.error("Fel vid hämtning:", err);
+          document.getElementById("carouselWrapper").innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--text-light);">
+              <i class="fas fa-exclamation-circle fa-2x" style="color: #ef4444;"></i>
+              <p style="margin-top: 16px;">Kunde inte ladda båtar. Försök igen.</p>
+            </div>
+          `;
+        }
+      }
+    });    
+    
+    // UI Text
+    document.getElementById("sendBtn").addEventListener("click", () => {
+      const input = document.getElementById("chatInput").value.trim();
+      if (input) {
+        sendToAgent(input);
+        document.getElementById("chatInput").value = "";
+        document.getElementById("chatInput").style.height = 'auto';
+      }
+    });
+
+    document.getElementById("chatInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById("sendBtn").click();
+      }
+    });
+
+    // Enhanced chat function
+    async function sendToAgent(text) {
+      const responseDiv = document.getElementById("agentResponse");
+      responseDiv.innerHTML = `
+        <i class="fas fa-robot"></i>
+        <span style="margin-left: 8px;">Malin tänker...</span>
+      `;
+      responseDiv.classList.add("loading");
+
+      try {
+        const res = await fetch(AGENT_URL, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({ chatInput: text })
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const result = await res.json();
+        console.log("Svar från n8n:", result);
+
+        let agentText = "";
+
+        // Hantera olika svarsformat från n8n
+        if (result?.output) {
+          // N8n Agent returnerar { output: "..." }
+          agentText = result.output;
+        } else if (result?.message?.content) {
+          // Standard OpenAI format
+          agentText = result.message.content;
+        } else if (typeof result === "string") {
+          // Direkt string
+          agentText = result;
+        } else if (result?.text || result?.response) {
+          // Alternativa format
+          agentText = result.text || result.response;
+        } else if (Array.isArray(result) && result.length > 0) {
+          // Array format - leta efter output eller message
+          const outputResult = result.find(item => item?.output);
+          const messageResult = result.find(item => item?.message?.content);
+          
+          if (outputResult) {
+            agentText = outputResult.output;
+          } else if (messageResult) {
+            agentText = messageResult.message.content;
+          } else {
+            agentText = "✅ Din förfrågan har behandlats!";
+          }
+        } else {
+          console.error("Oväntat svarsformat från n8n:", result);
+          agentText = "✅ Åtgärden slutfördes, men svarsformatet var oväntat.";
+        }
+
+        // Rensa bort eventuella markdown-symboler
+        if (agentText && typeof agentText === "string") {
+          agentText = agentText.replace(/^\s*✅\s*/, '✅ '); // Normalisera checkmark
+        }
+
+        responseDiv.classList.remove("loading");
+        responseDiv.innerHTML = `
+          <i class="fas fa-robot" style="color: var(--secondary-blue);"></i>
+          <span style="margin-left: 8px;">${agentText || "❌ Agenten gav inget svar."}</span>
+        `;
+
+      } catch (error) {
+        console.error("Fel vid kontakt med agenten:", error);
+        responseDiv.classList.remove("loading");
+        responseDiv.innerHTML = `
+          <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+          <span style="margin-left: 8px;">❌ Kunde inte kontakta agenten. Försök igen.</span>
+        `;
+      }
+    }
+
+  </script>
+</body>
+</html>
