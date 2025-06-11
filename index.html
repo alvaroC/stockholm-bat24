@@ -323,6 +323,26 @@
       animation: shimmer 1.5s infinite;
     }
 
+    /* Style links in agent responses */
+    .agent-response a {
+      color: var(--secondary-blue);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 16px;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 8px;
+      display: inline-block;
+      margin: 4px 0;
+      transition: all 0.3s ease;
+    }
+
+    .agent-response a:hover {
+      background: var(--secondary-blue);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
     @keyframes shimmer {
       0% { background-position: -200% 0; }
       100% { background-position: 200% 0; }
@@ -646,7 +666,8 @@
       }
     });    
     
-    // UI Text
+    // UI Chat
+
     document.getElementById("sendBtn").addEventListener("click", () => {
       const input = document.getElementById("chatInput").value.trim();
       if (input) {
@@ -663,12 +684,12 @@
       }
     });
 
-    // Enhanced chat function
+    // Enhanced chat function with support for clickable links
     async function sendToAgent(text) {
       const responseDiv = document.getElementById("agentResponse");
       responseDiv.innerHTML = `
         <i class="fas fa-robot"></i>
-        <span style="margin-left: 8px;">Malin tänker...</span>
+        <span style="margin-left: 8px;">Malin jobbar...</span>
       `;
       responseDiv.classList.add("loading");
 
@@ -691,12 +712,12 @@
 
         let agentText = "";
 
-        // Hantera olika svarsformat från n8n
+        // Hantera olika svarsformat från n8n (fokus på output-fältet)
         if (result?.output) {
-          // N8n Agent returnerar { output: "..." }
+          // n8n Agent returnerar { output: "..." } - HUVUDSAKLIG HANTERING
           agentText = result.output;
         } else if (result?.message?.content) {
-          // Standard OpenAI format
+          // Standard OpenAI format (backup)
           agentText = result.message.content;
         } else if (typeof result === "string") {
           // Direkt string
@@ -705,32 +726,61 @@
           // Alternativa format
           agentText = result.text || result.response;
         } else if (Array.isArray(result) && result.length > 0) {
-          // Array format - leta efter output eller message
-          const outputResult = result.find(item => item?.output);
-          const messageResult = result.find(item => item?.message?.content);
-          
-          if (outputResult) {
-            agentText = outputResult.output;
-          } else if (messageResult) {
-            agentText = messageResult.message.content;
-          } else {
-            agentText = "✅ Din förfrågan har behandlats!";
-          }
+          // Array format - leta efter första tillgängliga värde
+          const item = result.find(item => 
+            item?.output || item?.message?.content
+          );
+          agentText = item?.output || item?.message?.content || "✅ Din förfrågan har behandlats!";
         } else {
           console.error("Oväntat svarsformat från n8n:", result);
           agentText = "✅ Åtgärden slutfördes, men svarsformatet var oväntat.";
         }
 
-        // Rensa bort eventuella markdown-symboler
+        // Konvertera URL:er till klickbara länkar om de inte redan är HTML
         if (agentText && typeof agentText === "string") {
-          agentText = agentText.replace(/^\s*✅\s*/, '✅ '); // Normalisera checkmark
+          // Normalisera checkmark
+          agentText = agentText.replace(/^\s*✅\s*/, '✅ ');
+          
+          // Konvertera URL:er till klickbara länkar om texten inte redan innehåller HTML-länkar
+          if (!agentText.includes('<a ') && !agentText.includes('<A ')) {
+            // Regex för att hitta URL:er
+            const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/gi;
+            agentText = agentText.replace(urlRegex, (url) => {
+              // Ta bort eventuella skiljetecken på slutet
+              const cleanUrl = url.replace(/[.,;:!?]+$/, '');
+              const punctuation = url.substring(cleanUrl.length);
+              
+              return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>${punctuation}`;
+            });
+          }
         }
 
         responseDiv.classList.remove("loading");
+        
+        // VIKTIGT: Använd innerHTML för att stödja HTML-länkar
         responseDiv.innerHTML = `
           <i class="fas fa-robot" style="color: var(--secondary-blue);"></i>
           <span style="margin-left: 8px;">${agentText || "❌ Agenten gav inget svar."}</span>
         `;
+
+        // Säkerhetskontroll för externa länkar
+        const links = responseDiv.querySelectorAll('a');
+        links.forEach(link => {
+          // Sätt target="_blank" för externa länkar
+          if (link.href && (link.href.includes('stripe.com') || link.href.includes('http'))) {
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            
+            // Lägg till hover-effekt för länkar
+            link.style.transition = 'all 0.3s ease';
+            link.addEventListener('mouseenter', () => {
+              link.style.transform = 'translateY(-1px)';
+            });
+            link.addEventListener('mouseleave', () => {
+              link.style.transform = 'translateY(0)';
+            });
+          }
+        });
 
       } catch (error) {
         console.error("Fel vid kontakt med agenten:", error);
