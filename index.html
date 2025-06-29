@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stockholm Båt24</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <style>
     :root {
@@ -84,21 +84,6 @@
       color: rgba(255,255,255,0.9);
       font-size: 1rem;
       font-weight: 400;
-      position: relative;
-      z-index: 1;
-    }
-
-    .location-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,0.2);
-      backdrop-filter: blur(10px);
-      padding: 8px 16px;
-      border-radius: 20px;
-      color: var(--white);
-      font-size: 0.9rem;
-      margin-top: 16px;
       position: relative;
       z-index: 1;
     }
@@ -206,6 +191,7 @@
       height: 100%;
       object-fit: cover;
       transition: transform 0.3s ease;
+      cursor: pointer;
     }
 
     .carousel-item:hover img {
@@ -323,7 +309,6 @@
       animation: shimmer 1.5s infinite;
     }
 
-    /* Style links in agent responses */
     .agent-response a {
       color: var(--secondary-blue);
       text-decoration: none;
@@ -466,6 +451,12 @@
       font-weight: 500;
     }
 
+    /* Loading animation */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
   </style>
 </head>
 
@@ -482,16 +473,16 @@
         
     </header>
 
-    <!-- Voice Agent Card -->
+    
     <div class="voice-agent floating">
-      <div class="agent-avatar">
-        <i class="fas fa-headset"></i>
-      </div>
-      <h3 class="agent-greeting">Hej, mitt namn är Malin!</h3>
-      <p style="color: var(--text-light); margin-bottom: 20px;">Frågor? Prata med med mig</p>
-      <elevenlabs-convai agent-id="agent_01jwb4mk7zf6mr9g4ch5aj3tga"></elevenlabs-convai>
-    </div>
-
+  <div class="agent-avatar">
+    <i class="fas fa-headset"></i>
+  </div>
+  <h3 class="agent-greeting">Hej, mitt namn är Malin!</h3>
+  <p style="color: var(--text-light); margin-bottom: 20px;">Frågor? Prata med med mig</p>
+  <elevenlabs-convai agent-id="agent_01jwb4mk7zf6mr9g4ch5aj3tga"></elevenlabs-convai>
+</div>
+    
     <!-- Boat Gallery Section -->
     <section class="content-section">
       <div class="section-header">
@@ -501,12 +492,17 @@
         <h2 class="section-title">Våra Båtar</h2>
       </div>
       
-      <select id="productSelector" class="category-selector">
-        <option selected disabled>Välj båtkategori för att börja</option>
-        <option value="boats">🛥️ Visa alla båtar</option>
+      <select id="productSelector" class="category-selector" onchange="handleCategoryChange(this.value)">
+        <option value="" selected disabled>Välj båtkategori för att börja</option>
+        <option value="motorboat">🛥️ MOTORBÅT: snabba, smidiga båtar – bra för dagsutflykter, fiske eller transport.</option>
+        <option value="sailboat">⛵ SEGELBÅT: för längre turer och seglingsentusiaster. Kräver oftast erfarenhet.</option>
+        <option value="yacht">🛥️ YACHT: lyxiga båtar för den som vill ha det bästa. Perfekt för fest eller speciella tillfällen.</option>
+        <option value="rib">🚤 RIB-båt: snabba och stabila gummibåtar, perfekta för äventyr och transport.</option>
+        <option value="cabin">🏠 KABINETBÅT: Mindre båt med hytt, perfekt för övernattning eller längre utflykter.</option>        
       </select>
       
       <div id="carouselWrapper"></div>
+
     </section>
 
     <!-- Chat Section -->
@@ -516,23 +512,23 @@
           <i class="fas fa-comments"></i>
           Kontakta Malin
         </h3>
-        <p class="chat-subtitle">Skicka ett meddelande</p>
+        <p class="chat-subtitle">Kort meddelande eller använd röstchatten ovan</p>
       </div>
       
       <div class="chat-content">
         <div id="agentResponse" class="agent-response">
           <i class="fas fa-robot"></i>
-          Malin svarar ...
+          Skriv ett kort meddelande så svarar Malin...
         </div>
         
         <div class="input-group">
           <textarea 
             id="chatInput" 
             class="chat-input" 
-            placeholder="Skriv ditt meddelande här..." 
+            placeholder="Kort meddelande (namn, e-post, telefon...)" 
             rows="1"
           ></textarea>
-          <button id="sendBtn" class="send-button">
+          <button id="sendBtn" class="send-button" onclick="sendMessage()">
             <i class="fas fa-paper-plane"></i>
           </button>
         </div>
@@ -551,246 +547,249 @@
 
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
   
   <script>
-    const AGENT_URL = "https://claure.app.n8n.cloud/webhook/webhook-text";
+    // Your real n8n endpoint
+    const AGENT_URL = "https://ferclacoba.app.n8n.cloud/webhook/webhook-text1";
 
     // Auto-resize textarea
     const chatInput = document.getElementById("chatInput");
-    chatInput.addEventListener('input', function() {
-      this.style.height = 'auto';
-      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-    });
+    if (chatInput) {
+      chatInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      });
+    }
 
-    // UI Karusell  
+    // Handle category change with inline handler
+    function handleCategoryChange(category) {
+      if (!category) return;
 
-    document.getElementById("productSelector").addEventListener("change", async function () {
-      const category = this.value;
-      if (category === "boats") {
-        // Show loading state
-        document.getElementById("carouselWrapper").innerHTML = `
-          <div style="text-align: center; padding: 40px; color: var(--text-light);">
-            <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--secondary-blue);"></i>
-            <p style="margin-top: 16px;">Laddar båtar...</p>
-          </div>
-        `;
-
-        try {
-          const res = await fetch(AGENT_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" }
-          });
-
-          const data = await res.json();
-          const images = Array.isArray(data) ? data : [];
-
-          const validImages = images.filter(img => img.image && img.name);
-          if (!validImages.length) {
-            document.getElementById("carouselWrapper").innerHTML = `
-              <div style="text-align: center; padding: 40px; color: var(--text-light);">
-                <i class="fas fa-exclamation-triangle fa-2x" style="color: var(--accent-orange);"></i>
-                <p style="margin-top: 16px;">Inga båtar hittades just nu</p>
-              </div>
-            `;
-            return;
-          }
-
-          const carouselId = "boatCarousel";
-
-          const indicators = validImages.map((_, i) =>
-            `<button type="button" data-bs-target="#${carouselId}" data-bs-slide-to="${i}" ${i === 0 ? 'class="active"' : ''} aria-label="Slide ${i + 1}"></button>`
-          ).join("");
-
-          const slides = validImages.map((img, i) =>
-            `<div class="carousel-item ${i === 0 ? 'active' : ''}">
-              <img src="${img.image}" class="d-block w-100" alt="${img.name}" style="cursor: pointer;">
-              <div class="boat-info">
-                <div class="boat-name">${img.name}</div>
-                <div class="boat-features">
-                  <i class="fas fa-users"></i> Perfekt för familjer
-                  <span style="margin: 0 8px;">•</span>
-                  <i class="fas fa-anchor"></i> Klicka för mer info
-                </div>
-              </div>
-            </div>`
-          ).join("");
-
-          document.getElementById("carouselWrapper").innerHTML = `
-            <div id="${carouselId}" class="carousel slide boat-carousel" data-bs-touch="true" data-bs-ride="carousel">
-              <div class="carousel-indicators">${indicators}</div>
-              <div class="carousel-inner">${slides}</div>
-              <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Föregående</span>
-              </button>
-              <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Nästa</span>
-              </button>
-            </div>
-          `;
-
-          // Success feedback
-          const successMsg = document.createElement('div');
-          successMsg.className = 'success-feedback';
-          successMsg.innerHTML = '<i class="fas fa-check"></i> Båtar laddade! Klicka på en båt för mer information.';
-          document.getElementById("carouselWrapper").insertBefore(successMsg, document.getElementById(carouselId));
-          
-          setTimeout(() => successMsg.remove(), 3000);
-
-          // Boat click handlers
-          document.querySelectorAll('.carousel-item img').forEach(img => {
-            img.addEventListener('click', () => {
-              const boatName = img.alt;
-              sendToAgent(`Berätta mer om båten ${boatName}. Vad kostar det att hyra den?`);
-              
-              // Scroll to chat
-              document.querySelector('.chat-section').scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'center'
-              });
-            });
-          });
-
-        } catch (err) {
-          console.error("Fel vid hämtning:", err);
-          document.getElementById("carouselWrapper").innerHTML = `
-            <div style="text-align: center; padding: 40px; color: var(--text-light);">
-              <i class="fas fa-exclamation-circle fa-2x" style="color: #ef4444;"></i>
-              <p style="margin-top: 16px;">Kunde inte ladda båtar. Försök igen.</p>
-            </div>
-          `;
-        }
-      }
-    });    
-    
-    // UI Chat
-
-    document.getElementById("sendBtn").addEventListener("click", () => {
-      const input = document.getElementById("chatInput").value.trim();
-      if (input) {
-        sendToAgent(input);
-        document.getElementById("chatInput").value = "";
-        document.getElementById("chatInput").style.height = 'auto';
-      }
-    });
-
-    document.getElementById("chatInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        document.getElementById("sendBtn").click();
-      }
-    });
-
-    // Enhanced chat function with support for clickable links
-    async function sendToAgent(text) {
-      const responseDiv = document.getElementById("agentResponse");
-      responseDiv.innerHTML = `
-        <i class="fas fa-robot"></i>
-        <span style="margin-left: 8px;">Malin jobbar...</span>
+      // Instant loading feedback
+      const wrapper = document.getElementById("carouselWrapper");
+      wrapper.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+          <div style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid var(--secondary-blue); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+          <p style="color: var(--text-light); font-size: 0.9rem;">Laddar båtar...</p>
+        </div>
       `;
-      responseDiv.classList.add("loading");
 
+      loadBoatsFromN8N(category);
+    }
+
+    // OPTIMIZED VERSION - Load boats from your n8n workflow
+    async function loadBoatsFromN8N(category) {
       try {
-        const res = await fetch(AGENT_URL, {
+        const response = await fetch(AGENT_URL, {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
             "Accept": "application/json"
           },
-          body: JSON.stringify({ chatInput: text })
+          body: JSON.stringify({
+            chatInput: `Visa båtar för kategori: ${category}`
+          })
         });
 
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const result = await res.json();
-        console.log("Svar från n8n:", result);
+        const data = await response.json();
+        let boats = [];
 
-        let agentText = "";
-
-        // Hantera olika svarsformat från n8n (fokus på output-fältet)
-        if (result?.output) {
-          // n8n Agent returnerar { output: "..." } - HUVUDSAKLIG HANTERING
-          agentText = result.output;
-        } else if (result?.message?.content) {
-          // Standard OpenAI format (backup)
-          agentText = result.message.content;
-        } else if (typeof result === "string") {
-          // Direkt string
-          agentText = result;
-        } else if (result?.text || result?.response) {
-          // Alternativa format
-          agentText = result.text || result.response;
-        } else if (Array.isArray(result) && result.length > 0) {
-          // Array format - leta efter första tillgängliga värde
-          const item = result.find(item => 
-            item?.output || item?.message?.content
-          );
-          agentText = item?.output || item?.message?.content || "✅ Din förfrågan har behandlats!";
-        } else {
-          console.error("Oväntat svarsformat från n8n:", result);
-          agentText = "✅ Åtgärden slutfördes, men svarsformatet var oväntat.";
+        // Parse n8n response efficiently
+        if (Array.isArray(data) && data[0]?.output) {
+          // Handle: [{"output": "[{boat1}, {boat2}...]"}]
+          boats = JSON.parse(data[0].output);
+        } else if (data?.output) {
+          // Handle: {"output": "[{boat1}, {boat2}...]"}
+          boats = JSON.parse(data.output);
+        } else if (Array.isArray(data)) {
+          // Handle direct array
+          boats = data;
         }
 
-        // Konvertera URL:er till klickbara länkar om de inte redan är HTML
-        if (agentText && typeof agentText === "string") {
-          // Normalisera checkmark
-          agentText = agentText.replace(/^\s*✅\s*/, '✅ ');
-          
-          // Konvertera URL:er till klickbara länkar om texten inte redan innehåller HTML-länkar
-          if (!agentText.includes('<a ') && !agentText.includes('<A ')) {
-            // Regex för att hitta URL:er
-            const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/gi;
-            agentText = agentText.replace(urlRegex, (url) => {
-              // Ta bort eventuella skiljetecken på slutet
-              const cleanUrl = url.replace(/[.,;:!?]+$/, '');
-              const punctuation = url.substring(cleanUrl.length);
-              
-              return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>${punctuation}`;
-            });
-          }
-        }
-
-        responseDiv.classList.remove("loading");
+        // Validate and create carousel
+        const validBoats = boats.filter(boat => boat?.name && boat?.image);
         
-        // VIKTIGT: Använd innerHTML för att stödja HTML-länkar
-        responseDiv.innerHTML = `
-          <i class="fas fa-robot" style="color: var(--secondary-blue);"></i>
-          <span style="margin-left: 8px;">${agentText || "❌ Agenten gav inget svar."}</span>
-        `;
-
-        // Säkerhetskontroll för externa länkar
-        const links = responseDiv.querySelectorAll('a');
-        links.forEach(link => {
-          // Sätt target="_blank" för externa länkar
-          if (link.href && (link.href.includes('stripe.com') || link.href.includes('http'))) {
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            
-            // Lägg till hover-effekt för länkar
-            link.style.transition = 'all 0.3s ease';
-            link.addEventListener('mouseenter', () => {
-              link.style.transform = 'translateY(-1px)';
-            });
-            link.addEventListener('mouseleave', () => {
-              link.style.transform = 'translateY(0)';
-            });
-          }
-        });
+        if (validBoats.length > 0) {
+          createCarousel(validBoats, category);
+        } else {
+          showNoBoatsMessage(category);
+        }
 
       } catch (error) {
-        console.error("Fel vid kontakt med agenten:", error);
+        console.error("Error loading boats:", error);
+        showErrorMessage();
+      }
+    }
+
+    // Optimized carousel creation
+    function createCarousel(boats, category) {
+      if (!boats.length) {
+        showNoBoatsMessage(category);
+        return;
+      }
+
+      const carouselId = "boatCarousel";
+      const indicators = boats.map((_, i) => 
+        `<button type="button" data-bs-target="#${carouselId}" data-bs-slide-to="${i}" ${i === 0 ? 'class="active" aria-current="true"' : ''}></button>`
+      ).join("");
+
+      const slides = boats.map((boat, i) => 
+        `<div class="carousel-item ${i === 0 ? 'active' : ''}">
+          <img src="${boat.image}" class="d-block w-100" alt="${boat.name}" onclick="selectBoat('${boat.name.replace(/'/g, "\\'")}')" loading="lazy">
+          <div class="boat-info">
+            <div class="boat-name">${boat.name}</div>
+            <div class="boat-features">
+              <i class="fas fa-anchor"></i> Klicka på "Start a Call" ovan            </div>
+          </div>
+        </div>`
+      ).join("");
+
+      document.getElementById("carouselWrapper").innerHTML = `
+        <div class="success-feedback">
+          <i class="fas fa-check"></i> ${boats.length} båtar laddade!
+        </div>
+        <div id="${carouselId}" class="carousel slide boat-carousel" data-bs-ride="carousel">
+          <div class="carousel-indicators">${indicators}</div>
+          <div class="carousel-inner">${slides}</div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+          </button>
+        </div>
+      `;
+
+      // Auto-remove success message
+      setTimeout(() => document.querySelector('.success-feedback')?.remove(), 2000);
+    }
+
+    // Handle boat selection
+    function selectBoat(boatName) {
+      const message = `Berätta mer om båten ${boatName}. Vad kostar det att hyra den?`;
+      document.getElementById("chatInput").value = message;
+      sendMessage();
+      
+      // Scroll to chat
+      document.querySelector('.chat-section').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+
+    // Show no boats message
+    function showNoBoatsMessage(category) {
+      document.getElementById("carouselWrapper").innerHTML = `
+        <div style="text-align: center; padding: 40px; color: var(--text-light);">
+          <i class="fas fa-exclamation-triangle fa-2x" style="color: var(--accent-orange);"></i>
+          <p style="margin-top: 16px;">Inga båtar hittades för kategorin "${category}"</p>
+          <button onclick="document.getElementById('productSelector').value=''; document.getElementById('carouselWrapper').innerHTML='';" 
+                  style="margin-top: 12px; padding: 8px 16px; background: var(--secondary-blue); color: white; border: none; border-radius: 8px; cursor: pointer;">
+            Välj annan kategori
+          </button>
+        </div>
+      `;
+    }
+
+    // Show error message
+    function showErrorMessage() {
+      document.getElementById("carouselWrapper").innerHTML = `
+        <div style="text-align: center; padding: 40px; color: var(--text-light);">
+          <i class="fas fa-exclamation-circle fa-2x" style="color: #ef4444;"></i>
+          <p style="margin-top: 16px;">Kunde inte ansluta till n8n. Kontrollera workflow.</p>
+          <button onclick="location.reload()" 
+                  style="margin-top: 12px; padding: 8px 16px; background: var(--secondary-blue); color: white; border: none; border-radius: 8px; cursor: pointer;">
+            Försök igen
+          </button>
+        </div>
+      `;
+    }
+
+    // UI ChatSend message to Malin - VOICE FIRST PHILOSOPHY
+    function sendMessage() {
+      const input = document.getElementById("chatInput").value.trim();
+      if (!input) return;
+
+      const responseDiv = document.getElementById("agentResponse");
+      responseDiv.innerHTML = `
+        <i class="fas fa-robot"></i>
+        <span style="margin-left: 8px;">Malin svarar...</span>
+      `;
+      responseDiv.classList.add("loading");
+
+      // Send to your n8n chat endpoint
+      fetch(AGENT_URL, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ chatInput: input })
+      })
+      .then(response => response.json())
+      .then(result => {
+        responseDiv.classList.remove("loading");
+        
+        let agentText = "";
+        
+        // Simple parsing - same logic as boat gallery
+        if (Array.isArray(result) && result[0]?.output) {
+          // Handle: [{"output": "Hej från Malin"}]
+          agentText = result[0].output;
+        } else if (result?.output) {
+          // Handle: {"output": "Hej från Malin"}
+          agentText = result.output;
+        } else if (typeof result === "string") {
+          // Handle: "Hej från Malin"
+          agentText = result;
+        } else {
+          // Debug unknown format
+          console.error("Unknown response format from Malin:", result);
+          agentText = "Tekniskt fel - kontakta support.";
+        }
+
+        // Convert URLs to clickable links if Malin includes any
+        if (agentText && typeof agentText === "string") {
+          const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/gi;
+          agentText = agentText.replace(urlRegex, (url) => {
+            const cleanUrl = url.replace(/[.,;:!?]+$/, '');
+            const punctuation = url.substring(cleanUrl.length);
+            return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>${punctuation}`;
+          });
+        }
+
+        // Display Malin's response
+        responseDiv.innerHTML = `
+          <i class="fas fa-robot" style="color: var(--secondary-blue);"></i>
+          <span style="margin-left: 8px;">${agentText}</span>
+        `;
+      })
+      .catch(error => {
+        console.error("Error:", error);
         responseDiv.classList.remove("loading");
         responseDiv.innerHTML = `
           <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
-          <span style="margin-left: 8px;">❌ Kunde inte kontakta agenten. Försök igen.</span>
+          <span style="margin-left: 8px;">❌ Kunde inte kontakta Malin. Klicka på röstchatten ovan eller försök igen.</span>
         `;
-      }
+      });
+
+      document.getElementById("chatInput").value = "";
+      document.getElementById("chatInput").style.height = 'auto';
     }
+
+    // Enter key support for chat
+    document.getElementById("chatInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
 
   </script>
 </body>
